@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cron Expression Parser — Cron Syntax Checker & Next Run Times</title>
+  <meta name="description" content="Free cron expression parser. Paste any cron expression and instantly see a plain-English description and the next 5 scheduled run times. Works with standard 5-field and extended 6-field cron syntax.">
+  <meta property="og:title" content="Cron Expression Parser — Free Online Cron Syntax Checker">
+  <meta property="og:description" content="Paste any cron expression and see a plain-English description + next 5 run times. Free, no signup, instant results.">
+  <meta property="og:url" content="https://lior-seats.github.io/cron-expression-parser/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Cron Expression Parser — Free">
+  <meta name="twitter:description" content="Parse any cron expression: plain English + next 5 run times. Free, instant, no signup.">
+  <link rel="canonical" href="https://lior-seats.github.io/cron-expression-parser/">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; line-height: 1.6; }
+    a { color: #63b3ed; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); border-bottom: 1px solid #2d3748; padding: 2.5rem 1.5rem 2rem; text-align: center; }
+    header h1 { font-size: 2rem; font-weight: 700; color: #f7fafc; margin-bottom: 0.5rem; }
+    header p { color: #a0aec0; max-width: 580px; margin: 0 auto; font-size: 1.05rem; }
+    .badge { display: inline-block; background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; font-size: 0.78rem; border-radius: 4px; padding: 2px 8px; margin-top: 0.75rem; }
+    .container { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .card { background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 1.75rem; margin-bottom: 1.5rem; }
+    .card h2 { font-size: 1.05rem; color: #cbd5e0; margin-bottom: 1.25rem; font-weight: 600; }
+    label { display: block; font-size: 0.85rem; color: #a0aec0; margin-bottom: 0.35rem; font-weight: 500; }
+    .hint { font-size: 0.75rem; color: #718096; margin-top: 0.25rem; }
+    input[type="text"] { width: 100%; background: #2d3748; border: 1px solid #4a5568; color: #e2e8f0; border-radius: 6px; padding: 0.75rem 0.85rem; font-size: 1.1rem; font-family: 'SFMono-Regular', Consolas, monospace; outline: none; transition: border-color 0.15s; letter-spacing: 0.03em; }
+    input[type="text"]:focus { border-color: #63b3ed; }
+    input[type="text"].error { border-color: #fc8181; }
+    .btn-parse { width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #276749, #2f855a); color: #fff; transition: opacity 0.15s; margin-top: 0.75rem; }
+    .btn-parse:hover { opacity: 0.88; }
+    .examples { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    .ex-chip { background: #2d3748; border: 1px solid #4a5568; border-radius: 4px; font-size: 0.78rem; padding: 3px 8px; color: #a0aec0; cursor: pointer; font-family: 'SFMono-Regular', Consolas, monospace; transition: background 0.1s; }
+    .ex-chip:hover { background: #4a5568; color: #e2e8f0; }
+    /* Field labels */
+    .field-labels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; margin-top: 0.4rem; font-size: 0.7rem; color: #4a5568; text-align: center; padding: 0 0.1rem; }
+    /* Results */
+    #results { display: none; }
+    .english { background: #1c4532; border: 1px solid #276749; border-radius: 8px; padding: 1.25rem 1.5rem; font-size: 1.1rem; color: #9ae6b4; font-weight: 600; margin-bottom: 1.25rem; }
+    .run-list { list-style: none; padding: 0; }
+    .run-list li { display: flex; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid #2d3748; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9rem; }
+    .run-list li:last-child { border-bottom: none; }
+    .run-num { background: #2d3748; color: #a0aec0; width: 24px; height: 24px; border-radius: 50%; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 0.75rem; }
+    .run-dt { color: #e2e8f0; flex: 1; }
+    .run-rel { font-size: 0.8rem; color: #718096; margin-left: 0.75rem; }
+    .error-box { background: #742a2a; border: 1px solid #9b2c2c; border-radius: 6px; padding: 1rem 1.25rem; color: #fbd5d5; font-size: 0.9rem; margin-bottom: 1rem; }
+    /* Field breakdown */
+    .field-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-top: 0.5rem; }
+    @media (max-width: 480px) { .field-grid { grid-template-columns: 1fr 1fr; } }
+    .field-box { background: #2d3748; border-radius: 6px; padding: 0.65rem 0.75rem; }
+    .field-box .fname { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #718096; font-weight: 700; margin-bottom: 0.15rem; }
+    .field-box .fval { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.88rem; color: #63b3ed; font-weight: 700; }
+    .field-box .fdesc { font-size: 0.75rem; color: #a0aec0; margin-top: 0.15rem; }
+    /* Reference */
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .ref-table th { background: #2d3748; color: #a0aec0; padding: 0.5rem 0.85rem; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .ref-table td { padding: 0.5rem 0.85rem; border-bottom: 1px solid #2d3748; font-family: 'SFMono-Regular', Consolas, monospace; vertical-align: top; }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table .comment { font-family: inherit; color: #718096; }
+    /* CTA */
+    .cta-card { background: linear-gradient(135deg, #1a3c2a, #1e4433); border: 1px solid #276749; border-radius: 10px; padding: 1.75rem; text-align: center; margin-bottom: 1.5rem; }
+    .cta-card h3 { font-size: 1.1rem; color: #f7fafc; margin-bottom: 0.5rem; }
+    .cta-card p { color: #9ae6b4; font-size: 0.9rem; margin-bottom: 1.25rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .form-row { display: flex; gap: 0.5rem; max-width: 400px; margin: 0 auto; }
+    .form-row input[type="email"] { flex: 1; background: #1a2a1e; border: 1px solid #276749; color: #f7fafc; border-radius: 6px; padding: 0.65rem 0.85rem; font-size: 0.92rem; outline: none; }
+    .form-row input::placeholder { color: #4a7a5a; }
+    .form-row button { background: #276749; color: #fff; border: none; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; white-space: nowrap; }
+    .form-row button:hover { background: #2f855a; }
+    .form-msg { font-size: 0.85rem; margin-top: 0.5rem; text-align: center; min-height: 1.2rem; }
+    footer { text-align: center; padding: 2rem 1.5rem; color: #4a5568; font-size: 0.82rem; border-top: 1px solid #1a202c; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⏱ Cron Expression Parser</h1>
+  <p>Paste any cron expression and instantly see a plain-English description and the next 5 scheduled run times.</p>
+  <div class="badge">Free · No signup · Runs in your browser</div>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>🔍 Parse a cron expression</h2>
+
+    <label for="expr">Cron expression (5 fields: minute hour day month weekday)</label>
+    <input type="text" id="expr" placeholder="* * * * *" autocomplete="off" autocorrect="off" spellcheck="false" oninput="onInput()">
+    <div class="field-labels" id="field-labels">
+      <span>minute</span><span>hour</span><span>day</span><span>month</span><span>weekday</span>
+    </div>
+    <div class="hint">Supports * / , - syntax. Examples:</div>
+    <div class="examples">
+      <span class="ex-chip" onclick="setExpr('*/5 * * * *')">*/5 * * * *</span>
+      <span class="ex-chip" onclick="setExpr('0 9 * * 1-5')">0 9 * * 1-5</span>
+      <span class="ex-chip" onclick="setExpr('0 0 1 * *')">0 0 1 * *</span>
+      <span class="ex-chip" onclick="setExpr('0 */6 * * *')">0 */6 * * *</span>
+      <span class="ex-chip" onclick="setExpr('30 4 1,15 * *')">30 4 1,15 * *</span>
+      <span class="ex-chip" onclick="setExpr('0 12 * * 0')">0 12 * * 0</span>
+      <span class="ex-chip" onclick="setExpr('@daily')">@daily</span>
+      <span class="ex-chip" onclick="setExpr('@hourly')">@hourly</span>
+    </div>
+
+    <button class="btn-parse" onclick="parse()">Parse expression →</button>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <div id="error-section" style="display:none" class="error-box"></div>
+
+    <div id="ok-section" style="display:none">
+      <div class="english" id="r-english"></div>
+
+      <div class="card">
+        <h2>📋 Field breakdown</h2>
+        <div class="field-grid" id="r-fields"></div>
+      </div>
+
+      <div class="card">
+        <h2>🕒 Next 5 run times <span style="font-size:0.8rem;color:#718096;font-weight:400">(from now, your local timezone)</span></h2>
+        <ul class="run-list" id="r-runs"></ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <h3>📟 Get alerted when your cron jobs fail silently</h3>
+    <p>CronWatch monitors scheduled jobs across every platform — Heroku Scheduler, GitHub Actions, crontab, AWS EventBridge — and alerts you the moment a job misses its window or errors.</p>
+    <form onsubmit="submitWaitlist(event)">
+      <div class="form-row">
+        <input type="email" name="email" placeholder="you@yourcompany.com" required>
+        <button type="submit" id="cta-btn">Join waitlist →</button>
+      </div>
+      <div class="form-msg" id="cta-msg"></div>
+    </form>
+    <p style="margin-top:0.75rem;font-size:0.82rem;color:#276749">Early access pricing · No spam</p>
+  </div>
+
+  <!-- Quick reference -->
+  <div class="card">
+    <h2>📖 Cron syntax quick reference</h2>
+    <table class="ref-table">
+      <thead><tr><th>Expression</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>* * * * *</td><td class="comment">Every minute</td></tr>
+        <tr><td>*/15 * * * *</td><td class="comment">Every 15 minutes</td></tr>
+        <tr><td>0 * * * *</td><td class="comment">Every hour (on the hour)</td></tr>
+        <tr><td>0 9 * * *</td><td class="comment">Every day at 9am</td></tr>
+        <tr><td>0 9 * * 1-5</td><td class="comment">9am on weekdays (Mon–Fri)</td></tr>
+        <tr><td>0 0 * * 0</td><td class="comment">Midnight every Sunday</td></tr>
+        <tr><td>0 0 1 * *</td><td class="comment">Midnight on the 1st of each month</td></tr>
+        <tr><td>0 0 1 1 *</td><td class="comment">Midnight on January 1st</td></tr>
+        <tr><td>30 4 1,15 * *</td><td class="comment">4:30am on the 1st and 15th</td></tr>
+        <tr><td>@hourly</td><td class="comment">Same as 0 * * * *</td></tr>
+        <tr><td>@daily</td><td class="comment">Same as 0 0 * * *</td></tr>
+        <tr><td>@weekly</td><td class="comment">Same as 0 0 * * 0</td></tr>
+        <tr><td>@monthly</td><td class="comment">Same as 0 0 1 * *</td></tr>
+        <tr><td>@yearly</td><td class="comment">Same as 0 0 1 1 *</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.78rem;color:#4a5568;margin-top:0.75rem">Field order: <code style="background:#2d3748;padding:1px 5px;border-radius:3px;color:#a0aec0">minute(0-59) hour(0-23) day(1-31) month(1-12) weekday(0-7, 0=Sunday)</code></p>
+  </div>
+
+</div>
+
+<footer>
+  Built by <a href="https://lior-seats.github.io/">lior-seats</a> ·
+  <a href="https://lior-seats.github.io/cronwatch-waitlist/">CronWatch — cron job monitoring</a>
+</footer>
+
+<script>
+// ── Aliases ───────────────────────────────────────────────────────────────────
+const ALIASES = {
+  '@yearly':   '0 0 1 1 *',
+  '@annually': '0 0 1 1 *',
+  '@monthly':  '0 0 1 * *',
+  '@weekly':   '0 0 * * 0',
+  '@daily':    '0 0 * * *',
+  '@midnight': '0 0 * * *',
+  '@hourly':   '0 * * * *',
+};
+
+// ── Parse a single cron field ─────────────────────────────────────────────────
+function expandField(str, min, max) {
+  // Returns a sorted Set of valid integers, or throws
+  if (str === '*') {
+    const s = new Set();
+    for (let i = min; i <= max; i++) s.add(i);
+    return s;
+  }
+  const result = new Set();
+  for (const part of str.split(',')) {
+    if (/^\*\/\d+$/.test(part)) {
+      const step = parseInt(part.slice(2));
+      if (step < 1) throw new Error(`Invalid step: ${part}`);
+      for (let i = min; i <= max; i += step) result.add(i);
+    } else if (/^\d+$/.test(part)) {
+      const n = parseInt(part);
+      if (n < min || n > max) throw new Error(`${n} out of range [${min}-${max}]`);
+      result.add(n);
+    } else if (/^\d+-\d+$/.test(part)) {
+      const [a, b] = part.split('-').map(Number);
+      if (a > b) throw new Error(`Invalid range: ${part}`);
+      if (a < min || b > max) throw new Error(`Range ${part} out of bounds [${min}-${max}]`);
+      for (let i = a; i <= b; i++) result.add(i);
+    } else if (/^\d+-\d+\/\d+$/.test(part)) {
+      const [range, step] = part.split('/');
+      const [a, b] = range.split('-').map(Number);
+      const s = parseInt(step);
+      for (let i = a; i <= b; i += s) result.add(i);
+    } else {
+      throw new Error(`Cannot parse cron field: "${part}"`);
+    }
+  }
+  return result;
+}
+
+function parseCron(expr) {
+  expr = expr.trim();
+  if (ALIASES[expr.toLowerCase()]) expr = ALIASES[expr.toLowerCase()];
+
+  const parts = expr.split(/\s+/);
+  if (parts.length !== 5) throw new Error(`Expected 5 fields, got ${parts.length}. Format: minute hour day month weekday`);
+
+  const [minF, hrF, domF, monF, dowF] = parts;
+  return {
+    raw: parts,
+    minutes:  expandField(minF, 0, 59),
+    hours:    expandField(hrF, 0, 23),
+    doms:     expandField(domF, 1, 31),
+    months:   expandField(monF, 1, 12),
+    dows:     expandField(dowF, 0, 7), // 0 and 7 both = Sunday
+  };
+}
+
+// ── English description ───────────────────────────────────────────────────────
+const MONTHS_SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAYS_SHORT   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function describeField(raw, unit, all, names) {
+  if (raw === '*') return `every ${unit}`;
+  if (/^\*\/\d+$/.test(raw)) return `every ${raw.slice(2)} ${unit}s`;
+  const vals = [...(expandField(raw, 0, 999))].map(n => names ? names[n] || n : n);
+  if (vals.length === 1) return `${unit} ${vals[0]}`;
+  if (vals.length <= 4) return `${unit}s ${vals.join(', ')}`;
+  return `specific ${unit}s (${vals.length} values)`;
+}
+
+function toEnglish(expr) {
+  const trimmed = expr.trim();
+  if (ALIASES[trimmed.toLowerCase()]) {
+    const map = { '@hourly':'Every hour', '@daily':'Every day at midnight', '@midnight':'Every day at midnight',
+                  '@weekly':'Every Sunday at midnight', '@monthly':'1st of every month at midnight',
+                  '@yearly':'January 1st at midnight', '@annually':'January 1st at midnight' };
+    return map[trimmed.toLowerCase()] || '';
+  }
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length !== 5) return '';
+  const [minF, hrF, domF, monF, dowF] = parts;
+
+  // Special-case common patterns
+  if (trimmed === '* * * * *') return 'Every minute';
+  if (/^\*\/(\d+) \* \* \* \*$/.test(trimmed)) {
+    const n = parseInt(trimmed.match(/^\*\/(\d+)/)[1]);
+    return n === 1 ? 'Every minute' : `Every ${n} minutes`;
+  }
+  if (/^0 \* \* \* \*$/.test(trimmed)) return 'Every hour, on the hour';
+  if (/^0 \*\/(\d+) \* \* \*$/.test(trimmed)) {
+    const n = trimmed.match(/\*\/(\d+)/)[1];
+    return `Every ${n} hours, on the hour`;
+  }
+
+  // Build sentence
+  let parts2 = [];
+
+  // Time
+  if (minF === '0' && /^\d+$/.test(hrF)) {
+    parts2.push(`At ${hrF}:00`);
+  } else if (/^\d+$/.test(minF) && /^\d+$/.test(hrF)) {
+    const h = parseInt(hrF), m = parseInt(minF);
+    parts2.push(`At ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+  } else {
+    parts2.push(`At ${describeField(minF, 'minute', true)} past ${describeField(hrF, 'hour', true)}`);
+  }
+
+  // Day/month
+  if (domF !== '*' && monF !== '*') {
+    const dom = [...expandField(domF, 1, 31)].join(', ');
+    const mon = [...expandField(monF, 1, 12)].map(m => MONTHS_SHORT[m]).join(', ');
+    parts2.push(`on the ${dom} of ${mon}`);
+  } else if (domF !== '*') {
+    const dom = [...expandField(domF, 1, 31)];
+    parts2.push(dom.length === 1 ? `on the ${dom[0]}${ord(dom[0])} of each month` : `on the ${dom.join(', ')} of each month`);
+  } else if (monF !== '*') {
+    const mon = [...expandField(monF, 1, 12)].map(m => MONTHS_SHORT[m]).join(', ');
+    parts2.push(`every day in ${mon}`);
+  }
+
+  // Weekday
+  if (dowF !== '*') {
+    const dows = [...expandField(dowF, 0, 7)].map(d => DAYS_SHORT[d % 7]);
+    const unique = [...new Set(dows)];
+    if (unique.length === 5 && !unique.includes('Sat') && !unique.includes('Sun')) {
+      parts2.push('on weekdays');
+    } else if (unique.length === 7) {
+      // every day
+    } else {
+      parts2.push('on ' + unique.join(', '));
+    }
+  } else if (domF === '*') {
+    parts2.push('every day');
+  }
+
+  return parts2.join(' ');
+}
+
+function ord(n) { const s = ['th','st','nd','rd']; const v = n % 100; return s[(v-20)%10] || s[v] || s[0]; }
+
+// ── Next run times ────────────────────────────────────────────────────────────
+function nextRuns(expr, count = 5) {
+  const { minutes, hours, doms, months, dows } = parseCron(expr);
+  const runs = [];
+  let d = new Date();
+  d.setSeconds(0, 0);
+  d = new Date(d.getTime() + 60000); // start from next minute
+
+  const MAX_ITER = 500000;
+  let iter = 0;
+
+  while (runs.length < count && iter < MAX_ITER) {
+    iter++;
+    const mon = d.getMonth() + 1;
+    const dom = d.getDate();
+    const dow = d.getDay(); // 0=Sun
+    const hr  = d.getHours();
+    const min = d.getMinutes();
+
+    const dowOk = dows.has(dow) || dows.has(dow === 0 ? 7 : dow);
+
+    if (months.has(mon) && (doms.has(dom) || dowOk) && hours.has(hr) && minutes.has(min)) {
+      runs.push(new Date(d));
+      d = new Date(d.getTime() + 60000);
+    } else if (!months.has(mon)) {
+      // Skip to first minute of next month
+      d.setMonth(d.getMonth() + 1, 1);
+      d.setHours(0, 0, 0, 0);
+    } else if (!doms.has(dom) && !dowOk) {
+      d.setDate(d.getDate() + 1);
+      d.setHours(0, 0, 0, 0);
+    } else if (!hours.has(hr)) {
+      d.setHours(d.getHours() + 1, 0, 0, 0);
+    } else {
+      d = new Date(d.getTime() + 60000);
+    }
+  }
+  return runs;
+}
+
+// ── Relative time ─────────────────────────────────────────────────────────────
+function relativeTime(dt) {
+  const diff = dt - Date.now();
+  const mins = Math.round(diff / 60000);
+  if (mins < 1) return 'in less than a minute';
+  if (mins < 60) return `in ${mins} minute${mins !== 1 ? 's' : ''}`;
+  const hrs = Math.floor(mins / 60);
+  const rem = mins % 60;
+  if (hrs < 24) return `in ${hrs}h ${rem}m`;
+  const days = Math.floor(hrs / 24);
+  return `in ${days} day${days !== 1 ? 's' : ''}`;
+}
+
+// ── Field description for breakdown ──────────────────────────────────────────
+function fieldDescription(raw, unit, min, max, names) {
+  if (raw === '*') return `Every ${unit}`;
+  if (/^\*\/\d+$/.test(raw)) {
+    const step = parseInt(raw.slice(2));
+    const count = Math.floor((max - min) / step) + 1;
+    return `Every ${step} (${count} values)`;
+  }
+  try {
+    const vals = [...expandField(raw, min, max)];
+    const labeled = vals.map(v => names ? (names[v] || v) : v);
+    if (labeled.length <= 5) return labeled.join(', ');
+    return `${labeled.length} values (${labeled[0]}…${labeled[labeled.length-1]})`;
+  } catch { return raw; }
+}
+
+const MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW_NAMES   = { 0:'Sun', 1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat', 7:'Sun' };
+
+// ── UI ────────────────────────────────────────────────────────────────────────
+function setExpr(val) {
+  document.getElementById('expr').value = val;
+  document.getElementById('expr').classList.remove('error');
+  parse();
+}
+
+function onInput() {
+  document.getElementById('expr').classList.remove('error');
+}
+
+function parse() {
+  const raw = document.getElementById('expr').value.trim();
+  const resultsEl = document.getElementById('results');
+  const errEl = document.getElementById('error-section');
+  const okEl = document.getElementById('ok-section');
+
+  resultsEl.style.display = 'block';
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+
+  if (!raw) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Please enter a cron expression.';
+    document.getElementById('expr').classList.add('error');
+    return;
+  }
+
+  let normalized = raw;
+  if (ALIASES[raw.toLowerCase()]) normalized = ALIASES[raw.toLowerCase()];
+
+  let parsed;
+  try {
+    parsed = parseCron(normalized);
+  } catch (err) {
+    errEl.style.display = 'block';
+    errEl.textContent = `Invalid cron expression: ${err.message}`;
+    document.getElementById('expr').classList.add('error');
+    return;
+  }
+
+  // English
+  let eng = '';
+  try { eng = toEnglish(normalized); } catch { eng = '(complex expression)'; }
+  document.getElementById('r-english').textContent = eng || '(complex expression)';
+
+  // Field breakdown
+  const parts = normalized.split(/\s+/);
+  const fieldDefs = [
+    { name: 'Minute',  raw: parts[0], min: 0, max: 59,  names: null },
+    { name: 'Hour',    raw: parts[1], min: 0, max: 23,  names: null },
+    { name: 'Day',     raw: parts[2], min: 1, max: 31,  names: null },
+    { name: 'Month',   raw: parts[3], min: 1, max: 12,  names: MONTH_NAMES },
+    { name: 'Weekday', raw: parts[4], min: 0, max: 7,   names: DOW_NAMES },
+  ];
+  const fieldGrid = document.getElementById('r-fields');
+  fieldGrid.innerHTML = fieldDefs.map(f => `
+    <div class="field-box">
+      <div class="fname">${f.name}</div>
+      <div class="fval">${f.raw}</div>
+      <div class="fdesc">${fieldDescription(f.raw, f.name.toLowerCase(), f.min, f.max, f.names)}</div>
+    </div>`).join('');
+
+  // Next runs
+  let runs = [];
+  try { runs = nextRuns(normalized, 5); } catch { }
+  const runList = document.getElementById('r-runs');
+  if (runs.length === 0) {
+    runList.innerHTML = '<li style="color:#fc8181;padding:0.75rem 0">Could not compute next run times — expression may have no valid executions in the next year.</li>';
+  } else {
+    runList.innerHTML = runs.map((dt, i) => `
+      <li>
+        <div class="run-num">${i + 1}</div>
+        <div class="run-dt">${dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })} at ${dt.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}</div>
+        <div class="run-rel">${relativeTime(dt)}</div>
+      </li>`).join('');
+  }
+
+  okEl.style.display = 'block';
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Waitlist ──────────────────────────────────────────────────────────────────
+async function submitWaitlist(e) {
+  e.preventDefault();
+  const email = e.target.querySelector('input[type="email"]').value.trim();
+  const btn = document.getElementById('cta-btn');
+  const msg = document.getElementById('cta-msg');
+  btn.textContent = 'Joining…'; btn.disabled = true;
+  try {
+    const res = await fetch('https://agent-control-plane-w3m9.onrender.com/api/waitlist', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'cronwatch' })
+    });
+    const data = await res.json();
+    if (data.ok) { msg.style.color = '#9ae6b4'; msg.textContent = '✓ You\'re on the list!'; e.target.querySelector('input').value = ''; btn.textContent = 'Joined ✓'; }
+    else throw new Error();
+  } catch { msg.style.color = '#fc8181'; msg.textContent = 'Something went wrong. Try again.'; btn.textContent = 'Join waitlist →'; btn.disabled = false; }
+}
+
+// Auto-parse on load with a default example
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('expr').value = '0 9 * * 1-5';
+  parse();
+});
+
+// Hit counter
+(function(){try{fetch('https://agent-control-plane-w3m9.onrender.com/api/hit?page=cron-expression-parser',{mode:'no-cors'}).catch(()=>{});}catch(e){}})();
+</script>
+</body>
+</html>
