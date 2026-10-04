@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cron Expression Cheatsheet: Common Cron Schedules &amp; Examples</title>
+<meta name="description" content="Cron expression cheatsheet with 35+ real-world examples. Every minute, hourly, daily, weekly, monthly patterns. Copy-paste ready cron schedules with plain-English descriptions."/>
+<link rel="canonical" href="https://lior-seats.github.io/cron-expression-parser/cheatsheet.html"/>
+<meta property="og:title" content="Cron Expression Cheatsheet: Common Cron Schedules &amp; Examples"/>
+<meta property="og:description" content="35+ cron expression examples with plain-English descriptions. Copy-paste ready patterns for every schedule you need."/>
+<meta property="og:url" content="https://lior-seats.github.io/cron-expression-parser/cheatsheet.html"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; line-height: 1.6; }
+  a { color: #63b3ed; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); border-bottom: 1px solid #2d3748; padding: 2.5rem 1.5rem 2rem; text-align: center; }
+  header h1 { font-size: 2rem; font-weight: 700; color: #f7fafc; margin-bottom: 0.5rem; }
+  header p { color: #a0aec0; max-width: 580px; margin: 0 auto; font-size: 1.05rem; }
+  .badge { display: inline-block; background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; font-size: 0.78rem; border-radius: 4px; padding: 2px 8px; margin-top: 0.75rem; margin-right: 6px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .card { background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 1.75rem; margin-bottom: 1.5rem; }
+  .card h2 { font-size: 1.1rem; color: #f7fafc; margin-bottom: 1.25rem; font-weight: 700; }
+
+  /* Field reference */
+  .field-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
+  @media (max-width: 560px) { .field-row { grid-template-columns: repeat(3, 1fr); } }
+  .field-cell { background: #2d3748; border-radius: 6px; padding: 0.6rem 0.75rem; text-align: center; }
+  .field-cell .pos { font-size: 0.7rem; color: #718096; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 2px; }
+  .field-cell .name { font-size: 0.88rem; color: #63b3ed; font-weight: 700; font-family: 'SFMono-Regular', Consolas, monospace; }
+  .field-cell .range { font-size: 0.72rem; color: #718096; margin-top: 2px; }
+
+  /* Wildcards */
+  .wildcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 560px) { .wildcard-grid { grid-template-columns: 1fr; } }
+  .wildcard-item { background: #2d3748; border-radius: 6px; padding: 0.7rem 0.9rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+  .wildcard-sym { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 1.1rem; color: #f6ad55; font-weight: 700; min-width: 2rem; }
+  .wildcard-desc { font-size: 0.88rem; color: #a0aec0; }
+  .wildcard-desc strong { color: #e2e8f0; display: block; margin-bottom: 2px; }
+
+  /* Cron table */
+  .cron-table { width: 100%; border-collapse: collapse; }
+  .cron-table thead tr { background: #2d3748; }
+  .cron-table th { padding: 0.6rem 0.85rem; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: #a0aec0; font-weight: 700; }
+  .cron-table td { padding: 0.55rem 0.85rem; border-bottom: 1px solid #2d3748; font-size: 0.9rem; vertical-align: middle; }
+  .cron-table tr:last-child td { border-bottom: none; }
+  .cron-table tr:hover td { background: #1e2736; }
+  .expr { font-family: 'SFMono-Regular', Consolas, monospace; color: #63b3ed; font-size: 0.88rem; white-space: nowrap; }
+  .copy-btn { background: none; border: 1px solid #4a5568; border-radius: 4px; color: #a0aec0; cursor: pointer; font-size: 0.72rem; padding: 2px 7px; transition: background 0.1s, color 0.1s; white-space: nowrap; }
+  .copy-btn:hover { background: #2d3748; color: #e2e8f0; }
+  .copy-btn.ok { border-color: #276749; color: #9ae6b4; }
+  .section-head td { background: #1e273b; color: #90cdf4; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.4rem 0.85rem; }
+
+  /* Special strings */
+  .special-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+  .special-item { background: #2d3748; border-radius: 6px; padding: 0.75rem 1rem; }
+  .special-item .sym { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9rem; color: #9ae6b4; font-weight: 700; margin-bottom: 3px; }
+  .special-item .equiv { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.75rem; color: #718096; margin-bottom: 3px; }
+  .special-item .meaning { font-size: 0.82rem; color: #a0aec0; }
+
+  /* CTA */
+  .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+  @media (max-width: 600px) { .cta-grid { grid-template-columns: 1fr; } }
+  .cta-item { background: #1a202c; border-radius: 8px; padding: 1.25rem; border: 1px solid #2d3748; }
+  .cta-item h3 { font-size: 0.95rem; color: #f7fafc; margin-bottom: 0.4rem; }
+  .cta-item p { font-size: 0.85rem; color: #a0aec0; margin-bottom: 0.75rem; }
+  .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.88rem; text-decoration: none; }
+  .btn-green { background: linear-gradient(135deg, #276749, #2f855a); color: #fff; }
+  .btn-green:hover { opacity: 0.88; text-decoration: none; }
+  .btn-blue { background: #2b4c7e; color: #90cdf4; }
+  .btn-blue:hover { opacity: 0.88; text-decoration: none; }
+
+  footer { text-align: center; padding: 2rem 1.5rem; color: #4a5568; font-size: 0.82rem; border-top: 1px solid #1a202c; }
+</style>
+</head>
+<body>
+<header>
+  <h1>⏱ Cron Expression Cheatsheet</h1>
+  <p>35+ common cron schedules with plain-English descriptions. Copy-paste ready.</p>
+  <div>
+    <span class="badge">Free</span>
+    <span class="badge">No signup</span>
+    <a href="https://lior-seats.github.io/cron-expression-parser/" style="color:#63b3ed;font-size:0.85rem;">← Interactive parser</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Field positions -->
+  <div class="card">
+    <h2>📐 Field positions (5-field cron)</h2>
+    <div class="field-row">
+      <div class="field-cell"><div class="pos">1st</div><div class="name">minute</div><div class="range">0–59</div></div>
+      <div class="field-cell"><div class="pos">2nd</div><div class="name">hour</div><div class="range">0–23</div></div>
+      <div class="field-cell"><div class="pos">3rd</div><div class="name">day</div><div class="range">1–31</div></div>
+      <div class="field-cell"><div class="pos">4th</div><div class="name">month</div><div class="range">1–12</div></div>
+      <div class="field-cell"><div class="pos">5th</div><div class="name">weekday</div><div class="range">0–7 (0=Sun)</div></div>
+    </div>
+    <p style="font-size:0.8rem;color:#718096;margin-top:0.5rem">Read left to right: <code style="background:#2d3748;padding:1px 5px;border-radius:3px;color:#a0aec0">minute hour day-of-month month day-of-week</code></p>
+  </div>
+
+  <!-- Wildcards -->
+  <div class="card">
+    <h2>🔣 Wildcard syntax</h2>
+    <div class="wildcard-grid">
+      <div class="wildcard-item"><div class="wildcard-sym">*</div><div class="wildcard-desc"><strong>Any value</strong>* in a field matches every possible value</div></div>
+      <div class="wildcard-item"><div class="wildcard-sym">*/n</div><div class="wildcard-desc"><strong>Every n units</strong> — <code>*/5</code> in minutes = every 5 minutes</div></div>
+      <div class="wildcard-item"><div class="wildcard-sym">a-b</div><div class="wildcard-desc"><strong>Range</strong> — <code>1-5</code> in weekday = Mon–Fri</div></div>
+      <div class="wildcard-item"><div class="wildcard-sym">a,b</div><div class="wildcard-desc"><strong>List</strong> — <code>1,15</code> in day = 1st and 15th of month</div></div>
+      <div class="wildcard-item"><div class="wildcard-sym">a-b/n</div><div class="wildcard-desc"><strong>Range with step</strong> — <code>0-12/2</code> in hours = every 2h from midnight to noon</div></div>
+      <div class="wildcard-item"><div class="wildcard-sym">?</div><div class="wildcard-desc"><strong>No specific value</strong> (Quartz / some platforms) — alias for * in day/weekday fields</div></div>
+    </div>
+  </div>
+
+  <!-- Common expressions table -->
+  <div class="card">
+    <h2>📋 Common cron expressions</h2>
+    <p style="font-size:0.82rem;color:#718096;margin-bottom:1rem">Click the expression or ⧉ to copy to clipboard. <a href="https://lior-seats.github.io/cron-expression-parser/">Test any expression in the interactive parser →</a></p>
+    <div style="overflow-x:auto">
+    <table class="cron-table">
+      <thead><tr><th>Expression</th><th>Description</th><th></th></tr></thead>
+      <tbody>
+
+        <tr><td class="section-head" colspan="3">⏱ Sub-hourly</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">* * * * *</span></td><td>Every minute</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">*/5 * * * *</span></td><td>Every 5 minutes</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">*/10 * * * *</span></td><td>Every 10 minutes</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">*/15 * * * *</span></td><td>Every 15 minutes</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">*/30 * * * *</span></td><td>Every 30 minutes</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0,30 * * * *</span></td><td>At :00 and :30 past every hour</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">🕐 Hourly</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 * * * *</span></td><td>Every hour (on the hour)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 */2 * * *</span></td><td>Every 2 hours</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 */4 * * *</span></td><td>Every 4 hours (00:00, 04:00, 08:00, …)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 */6 * * *</span></td><td>Every 6 hours (00:00, 06:00, 12:00, 18:00)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 */12 * * *</span></td><td>Every 12 hours (midnight and noon)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">30 * * * *</span></td><td>Every hour at :30 (e.g. 00:30, 01:30, …)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">📅 Daily</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 * * *</span></td><td>Every day at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 6 * * *</span></td><td>Every day at 6:00am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 9 * * *</span></td><td>Every day at 9:00am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 12 * * *</span></td><td>Every day at noon</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 18 * * *</span></td><td>Every day at 6:00pm</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">30 7 * * *</span></td><td>Every day at 7:30am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">45 23 * * *</span></td><td>Every day at 11:45pm</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">📆 Weekday / weekend</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 9 * * 1-5</span></td><td>Weekdays (Mon–Fri) at 9:00am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 8 * * 1-5</span></td><td>Weekdays at 8:00am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 * * 6,0</span></td><td>Weekends (Sat &amp; Sun) at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 * * 1</span></td><td>Every Monday at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 * * 0</span></td><td>Every Sunday at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">30 2 * * 1</span></td><td>Every Monday at 2:30am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 10 * * 5</span></td><td>Every Friday at 10:00am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">🗓 Monthly</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 1 * *</span></td><td>First day of every month at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 15 * *</span></td><td>15th of every month at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 1,15 * *</span></td><td>1st and 15th of every month</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">30 4 1,15 * *</span></td><td>1st and 15th of every month at 4:30am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 L * *</span></td><td>Last day of every month (Quartz / some schedulers)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">📅 Specific months</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 1 1 *</span></td><td>January 1st at midnight (yearly)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 1 */3 *</span></td><td>First day of every quarter (Jan/Apr/Jul/Oct)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 * 12 *</span></td><td>Every day in December at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0 1 1,7 *</span></td><td>January 1st and July 1st at midnight</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+        <tr><td class="section-head" colspan="3">🔀 Combinations</td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 2 * * *</span></td><td>Daily at 2:00am (common for backups)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 3 * * 0</span></td><td>Every Sunday at 3:00am (weekly maintenance)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">5 4 * * 0</span></td><td>Every Sunday at 4:05am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 22 * * 1-5</span></td><td>Weeknights at 10:00pm</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">*/15 9-17 * * 1-5</span></td><td>Every 15 min during business hours (weekdays 9am–5pm)</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+        <tr><td><span class="expr" onclick="copyExpr(this)">0 0-6/2 * * *</span></td><td>Every 2 hours between midnight and 6am</td><td><button class="copy-btn" onclick="copyExpr(this.previousElementSibling.previousElementSibling)">⧉</button></td></tr>
+
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Special strings -->
+  <div class="card">
+    <h2>⚡ Special strings (shorthand)</h2>
+    <p style="font-size:0.82rem;color:#718096;margin-bottom:1rem">Supported in most cron implementations and GitHub Actions <code>on: schedule:</code>.</p>
+    <div class="special-grid">
+      <div class="special-item">
+        <div class="sym">@yearly</div>
+        <div class="equiv">0 0 1 1 *</div>
+        <div class="meaning">Once a year, Jan 1st midnight</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@annually</div>
+        <div class="equiv">0 0 1 1 *</div>
+        <div class="meaning">Alias for @yearly</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@monthly</div>
+        <div class="equiv">0 0 1 * *</div>
+        <div class="meaning">Once a month, 1st at midnight</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@weekly</div>
+        <div class="equiv">0 0 * * 0</div>
+        <div class="meaning">Once a week, Sunday midnight</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@daily</div>
+        <div class="equiv">0 0 * * *</div>
+        <div class="meaning">Once a day at midnight</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@midnight</div>
+        <div class="equiv">0 0 * * *</div>
+        <div class="meaning">Alias for @daily</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@hourly</div>
+        <div class="equiv">0 * * * *</div>
+        <div class="meaning">Every hour at :00</div>
+      </div>
+      <div class="special-item">
+        <div class="sym">@reboot</div>
+        <div class="equiv">(system dependent)</div>
+        <div class="meaning">Once at system startup (crontab only)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-grid">
+    <div class="cta-item">
+      <h3>⏱ Test any expression interactively</h3>
+      <p>Paste any cron expression and instantly see the plain-English description + next 5 scheduled run times.</p>
+      <a class="btn btn-blue" href="https://lior-seats.github.io/cron-expression-parser/">Open cron parser →</a>
+    </div>
+    <div class="cta-item">
+      <h3>📟 Get alerted when cron jobs fail</h3>
+      <p>CronWatch monitors your scheduled jobs and alerts you the moment one misses its window — across crontab, GitHub Actions, and Heroku.</p>
+      <a class="btn btn-green" href="https://lior-seats.github.io/cronwatch-waitlist/">Join CronWatch waitlist →</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://lior-seats.github.io/cron-expression-parser/">Cron Expression Parser</a> ·
+  <a href="https://lior-seats.github.io/cronwatch-waitlist/">CronWatch</a> ·
+  Built by <a href="https://lior-seats.github.io/">lior-seats</a>
+</footer>
+
+<script>
+function copyExpr(el) {
+  const text = el.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    // Find the copy button in same row
+    const row = el.closest('tr');
+    const btn = row ? row.querySelector('.copy-btn') : null;
+    if (btn) { btn.classList.add('ok'); btn.textContent = '✓'; setTimeout(() => { btn.classList.remove('ok'); btn.textContent = '⧉'; }, 1500); }
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    const row = el.closest('tr');
+    const btn = row ? row.querySelector('.copy-btn') : null;
+    if (btn) { btn.classList.add('ok'); btn.textContent = '✓'; setTimeout(() => { btn.classList.remove('ok'); btn.textContent = '⧉'; }, 1500); }
+  });
+}
+</script>
+<script>(function(){try{fetch('https://agent-control-plane-w3m9.onrender.com/api/hit?page=cron-cheatsheet',{mode:'no-cors'}).catch(function(){});}catch(e){}})();</script>
+</body>
+</html>
