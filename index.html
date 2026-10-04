@@ -60,6 +60,13 @@
     .ref-table td { padding: 0.5rem 0.85rem; border-bottom: 1px solid #2d3748; font-family: 'SFMono-Regular', Consolas, monospace; vertical-align: top; }
     .ref-table tr:last-child td { border-bottom: none; }
     .ref-table .comment { font-family: inherit; color: #718096; }
+    /* Share row */
+    .share-row { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+    .btn-share { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: opacity 0.15s; text-decoration: none; white-space: nowrap; }
+    .btn-share:hover { opacity: 0.80; text-decoration: none; }
+    .btn-share-x { background: #000; color: #fff; }
+    .btn-share-copy { background: #2d3748; color: #e2e8f0; border: 1px solid #4a5568; }
+    .btn-share-copy.copied { background: #276749 !important; border-color: #2f855a; color: #9ae6b4; }
     /* CTA */
     .cta-card { background: linear-gradient(135deg, #1a3c2a, #1e4433); border: 1px solid #276749; border-radius: 10px; padding: 1.75rem; text-align: center; margin-bottom: 1.5rem; }
     .cta-card h3 { font-size: 1.1rem; color: #f7fafc; margin-bottom: 0.5rem; }
@@ -113,6 +120,15 @@
 
     <div id="ok-section" style="display:none">
       <div class="english" id="r-english"></div>
+      <div class="share-row">
+        <a id="btn-share-x" class="btn-share btn-share-x" href="#" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 1200 1227" fill="currentColor" aria-hidden="true"><path d="M714.163 519.284L1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.163 519.284zm-144.418 167.892l-47.468-67.894L144.011 79.672h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.745 687.176z"/></svg>
+          Share on 𝕏
+        </a>
+        <button id="btn-copy" class="btn-share btn-share-copy" onclick="copyResult()">
+          📋 Copy result
+        </button>
+      </div>
 
       <div class="card">
         <h2>📋 Field breakdown</h2>
@@ -472,8 +488,39 @@ function parse() {
       </li>`).join('');
   }
 
+  // Share button
+  const shareText = encodeURIComponent(`"${raw}" → ${eng || '(complex cron expression)'}\n\nParse your cron expressions: https://lior-seats.github.io/cron-expression-parser/`);
+  document.getElementById('btn-share-x').href = `https://twitter.com/intent/tweet?text=${shareText}`;
+  const copyBtn = document.getElementById('btn-copy');
+  copyBtn.classList.remove('copied');
+  copyBtn.textContent = '📋 Copy result';
+
   okEl.style.display = 'block';
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Share helpers ─────────────────────────────────────────────────────────────
+function copyResult() {
+  const expr = document.getElementById('expr').value.trim();
+  const desc = document.getElementById('r-english').textContent.trim();
+  const text = `"${expr}" → ${desc}\n\nhttps://lior-seats.github.io/cron-expression-parser/`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.classList.add('copied');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋 Copy result'; }, 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('btn-copy');
+    btn.classList.add('copied');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋 Copy result'; }, 2000);
+  });
 }
 
 // ── Waitlist ──────────────────────────────────────────────────────────────────
